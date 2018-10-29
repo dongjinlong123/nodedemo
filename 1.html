@@ -10,23 +10,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no ">
 </head>
 <body>
+<h3>hello world </h3>
 <script>
-    var ws = new WebSocket('ws://localhost:8080/ws/ws');
-    ws.onmessage=function(e){
-        console.log('_message');
-        console.log(e.data);
-    };
-    ws.onerror=function(err){
-        console.log('_error');
-        console.log(err);
-    };
-    ws.onopen=function(){
-        console.log('_connect')
-        ws.send("发送数据");
-    };
-    ws.onclose=function(){
-        console.log('_close');
-    };
+
+//    var ws = new WebSocket('ws://localhost:8080/ws/ws');
+//    ws.onmessage=function(e){
+//        console.log('_message');
+//        console.log(e.data);
+//    };
+//    ws.onerror=function(err){
+//        console.log('_error');
+//        console.log(err);
+//    };
+//    ws.onopen=function(){
+//        console.log('_connect')
+//        ws.send("发送数据");
+//    };
+//    ws.onclose=function(){
+//        console.log('_close');
+//    };
 
 
 </script>

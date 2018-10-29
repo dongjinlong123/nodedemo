@@ -1,4 +1,5 @@
 var express = require("express");
+var fs = require("fs");
 var app = express();
 
 var expressWs = require("express-ws")(app);
@@ -28,7 +29,14 @@ var first = require("./route/first");
 
 app.use("/first", first.first);
 
+app.get("/",function (req,res,next) {
+    res.json("hello word");
+})
+var html = require("fs").readFileSync("./1.html","utf-8");
+app.get("/index.html",function (req,res,next) {
 
+    res.send(html);
+})
 /*ws*/
 var homeClients = [];
 
