@@ -15,28 +15,28 @@ var User = function (userCode,avatarUrl, city, country, gender, language, nickNa
 };
 
 var homeList = []; //房间信息列表
-var count = 0;
+
 /*创建房间后初始化20个位置*/
 
 function createHome(homeName, homePassword, user) {
     var userInfoList = [];
-    for (var i = 0; i < 20; i++) {
+   // for (var i = 0; i < 20; i++) {
         var obj = {
-            hasPeople: false,
-            userInfo:new User(),
-            charnum:-1 //当前用户所在的座位号
-        }
-        userInfoList.push(obj)
+        hasPeople: false,
+        userInfo:new User(),
+        charnum:-1 //当前用户所在的座位号
     }
+        userInfoList.push(obj)
+ //   }
     //房主信息
     user.owner = "true";
     userInfoList[0].userInfo = user;
     userInfoList[0].hasPeople = true;
     userInfoList[0].charnum = 0;
-    var homeCount = count; //房间号
+    var homeCount = homeList.length; //房间号
     //home 房间中的人员列表信息
     homeList.push({count: homeCount, homeName: homeName, homePassword: homePassword, userInfoList: userInfoList, userNum: 1});
-    count++;
+
     return homeCount;
 }
 
@@ -61,15 +61,16 @@ first.post("/getCharNumByUserCode",function (req,res,next) {
     console.log(userCode);
     var homeCount = req.body.homeCount;
     console.log(homeCount);
+    var idx = 0;
     for(var i =0;i< homeList[homeCount].userInfoList.length;i++){
         if(homeList[homeCount].userInfoList[i].userInfo.userCode == userCode){
-
+            idx = i
             charnum = homeList[homeCount].userInfoList[i].charnum;
             console.log(charnum + "--------" + i );
-            //break;
+            break;
         }
     }
-    res.json({code: "00", msg: "success","charnum":charnum})
+    res.json({code: "00", msg: "success","charnum":charnum ,"idx":i})
 });
 
 first.post("/joinHome",function (req,res,next) {
@@ -79,14 +80,20 @@ first.post("/joinHome",function (req,res,next) {
     console.log(user);
     console.log(homeCount);
     user.owner = "false";
-    for(var i =0;i< homeList[homeCount].userInfoList.length;i++){
-       if(homeList[homeCount].userInfoList[i].hasPeople == false){
-           homeList[homeCount].userInfoList[i].hasPeople = true;
-           homeList[homeCount].userInfoList[i].userInfo = user;
-           homeList[homeCount].userInfoList[i].charnum = i;
-           break;
-       }
+    var obj = {
+        hasPeople: true,
+        userInfo:user,
+        charnum:homeList[homeCount].userInfoList.length //当前用户所在的座位号
     }
+    homeList[homeCount].userInfoList.push(obj)
+    // for(var i =0;i< homeList[homeCount].userInfoList.length;i++){
+    //    if(homeList[homeCount].userInfoList[i].hasPeople == false){
+    //        homeList[homeCount].userInfoList[i].hasPeople = true;
+    //        homeList[homeCount].userInfoList[i].userInfo = user;
+    //        homeList[homeCount].userInfoList[i].charnum = i;
+    //        break;
+    //    }
+    // }
 
     res.json({code: "00", msg: "success"})
 });
@@ -103,11 +110,12 @@ function initChar(){
     }
     for(var i =0;i<home.length;i++){
         var obj = {
-            color: home[i]//颜色
+            color: home[i],//颜色
+            userInfo:{}
         }
         charList.push(obj)
     }
 }
 initChar();
 
-module.exports = {first: first,count:count,homeList:homeList,charList:charList};
+module.exports = {first: first,homeList:homeList,charList:charList};
