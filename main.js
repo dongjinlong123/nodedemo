@@ -29,11 +29,11 @@ var first = require("./route/first");
 
 app.use("/first", first.first);
 
-app.get("/",function (req,res,next) {
+app.get("/", function (req, res, next) {
     res.json("hello word");
 })
-var html = require("fs").readFileSync("./1.html","utf-8");
-app.get("/index.html",function (req,res,next) {
+var html = require("fs").readFileSync("./1.html", "utf-8");
+app.get("/index.html", function (req, res, next) {
 
     res.send(html);
 })
@@ -59,65 +59,75 @@ function receiveCmd(ws, msg) {
             var count = msg.data;
             var owner = msg.owner;
             //判断是否存在房间
-            if(homeClients[count]){
+            if (homeClients[count] && homeClients[count].clients != undefined ) {
                 homeClients[count].clients.push(ws)
 
-            }else{
+            } else {
                 var clients = [];
                 clients.push(ws);
                 homeClients.push({count: count, clients: clients})
             }
-            //发送人数信息
-            var homePeopleNum = homeClients[count].clients.length;
-            var userInfoList =first.homeList[count].userInfoList;
+            try{
+                //发送人数信息
+                var homePeopleNum = homeClients[count].clients.length;
+                var userInfoList = first.homeList[count].userInfoList;
 
-            var msg = '{ "type": "'+msg.type+'", "userInfoList":' +JSON.stringify(userInfoList)+', "homePeopleNum":"' + homePeopleNum +'"}'
+                var msg = '{ "type": "' + msg.type + '", "userInfoList":' + JSON.stringify(userInfoList) + ', "homePeopleNum":"' + homePeopleNum + '"}'
 
-            sendMsgAll(count,msg)
+                sendMsgAll(count, msg)
+
+            }catch (e){
+
+            }
 
             break;
         case "close":
             var count = msg.data;
-            console.log("=============="+count)
+            console.log("==============" + count)
             var userCode = msg.userCode;
-            console.log("=============="+userCode)
-            var userInfoList =first.homeList[count].userInfoList;
+            console.log("==============" + userCode)
+            var userInfoList = first.homeList[count].userInfoList;
             var owner = msg.owner;
             for (var index = 0; index < homeClients.length; index++) {
-                if(homeClients[index] .count == count){ //房间号相等
+                if (homeClients[index].count == count) { //房间号相等
                     for (var i = 0; i < homeClients[index].clients.length; i++) {
-                        if ( homeClients[index].clients[i] == ws) {
+                        if (homeClients[index].clients[i] == ws) {
                             console.log("=================close")
-                             homeClients[index].clients.splice(i, 1);
+                            homeClients[index].clients.splice(i, 1);
                             break;
                         }
                     }
                     var c_num = 0;
-                    if(userInfoList.length == 1){
-                        console.log("=================close2" +count)
+                    if (userInfoList.length == 1) {
+                        console.log("=================close2" + count)
                         first.homeList.splice(count, 1);
 
-                    }else{
-                        console.log("=================close3" +count)
+                    } else {
+                        console.log("=================close3" + count)
                         for (var i = 0; i < userInfoList.length; i++) {
                             //用户退出了删除用户的信息
-                            if(owner == "true" && userInfoList[i].userInfo.userCode != userCode && c_num == 0){
+                            if (owner == "true" && userInfoList[i].userInfo.userCode != userCode && c_num == 0) {
                                 //如果是房主
-                                console.log("=================close4" +count)
+                                console.log("=================close4" + count)
                                 userInfoList[i].userInfo.owner = "true";
-                                c_num ++
+                                c_num++
                             }
-                            if(userInfoList[i].userInfo.userCode == userCode){
-                                console.log("=================close5" +count)
+                            if (userInfoList[i].userInfo.userCode == userCode) {
+                                console.log("=================close5" + count)
                                 first.homeList[count].userInfoList.splice(i, 1)
                             }
 
                         }
                         //发送人数信息
-                        var homePeopleNum = homeClients[count].clients.length;
-                        var userInfoList =first.homeList[count].userInfoList;
-                        var msg = '{ "type": "open", "userInfoList":' +JSON.stringify(userInfoList)+', "homePeopleNum":"' + homePeopleNum +'"}'
-                        sendMsgAll(count,msg)
+                        try {
+                            var homePeopleNum = homeClients[count].clients.length;
+                            var userInfoList = first.homeList[count].userInfoList;
+                            var msg = '{ "type": "open", "userInfoList":' + JSON.stringify(userInfoList) + ', "homePeopleNum":"' + homePeopleNum + '"}'
+                            sendMsgAll(count, msg)
+                        } catch (e) {
+
+                        }
+
                     }
 
                 }
@@ -127,25 +137,24 @@ function receiveCmd(ws, msg) {
         case "changeChar":
             var count = msg.data;
             var userInfoList = msg.userInfoList;
-            console.log("==================****"+msg.userInfoList[0].userInfo.charnum)
+            console.log("==================****" + msg.userInfoList[0].userInfo.charnum)
             first.homeList[count].userInfoList = userInfoList;
-            var msg = '{ "type": "'+msg.type+'", "userInfoList":' +JSON.stringify(userInfoList)+'}'
-            sendMsgAll(count,msg)
+            var msg = '{ "type": "' + msg.type + '", "userInfoList":' + JSON.stringify(userInfoList) + '}'
+            sendMsgAll(count, msg)
             break;
     }
 
 }
 
-function  sendMsgAll(count,msg) {
-    //发送人数信息
-    var homePeopleNum = homeClients[count].clients.length;
+function sendMsgAll(count, msg) {
+    try {  //发送人数信息
+        var homePeopleNum = homeClients[count].clients.length;
 
-    for(var i =0;i<homePeopleNum;i++){
-        try{
+        for (var i = 0; i < homePeopleNum; i++) {
             homeClients[count].clients[i].send(msg);
-        }catch (e){
-            console.log(e);
         }
+    } catch (e) {
+        console.log(e);
     }
 }
 
